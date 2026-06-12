@@ -30,16 +30,22 @@ RUN apt-get update \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
 
-RUN useradd --create-home --shell /bin/bash --uid 1000 build \
- && mkdir -p /workspace \
- && chown build:build /workspace
+# Apptainer runs as the host user — the Dockerfile USER directive
+# is not honoured AND the bind mount maps host file ownership
+# verbatim. A non-root USER in the image creates a permission trap
+# (UID 1000 in the image can't read the project tree if the host
+# UID differs). Stay root ; the sandbox boundary is the workspace
+# μVM, not the container user.
 
-USER build
 WORKDIR /workspace
 
-# pip cache lives in the writable home so first install isn't
-# rebuilt by every job.
-ENV PIP_CACHE_DIR=/home/build/.cache/pip
+# pip cache lives in /root.
+ENV PIP_CACHE_DIR=/root/.cache/pip
+# Apptainer exec uses non-login shells. Make python3 + python both
+# discoverable from PATH (the python:3.13-slim base puts them at
+# /usr/local/bin already but pinning here makes the contract
+# explicit + survives any future image flattening).
+ENV PATH=/usr/local/bin:/usr/bin:${PATH}
 
 CMD ["/bin/sh", "-c", "python -m venv /workspace/.build/venv && /workspace/.build/venv/bin/pip install -r requirements.txt && /workspace/.build/venv/bin/pytest /workspace"]
 
