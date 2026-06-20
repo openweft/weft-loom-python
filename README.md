@@ -1,3 +1,5 @@
+<p align="center"><img src="https://raw.githubusercontent.com/openweft/brand/main/social/weft-loom-python.png" alt="weft-loom-python" width="720"></p>
+
 # weft-loom-python
 
 Python compile/run sandbox for weft-loom (Python 3.13 + build-essential + git). Consumed by [weft-loom-server](https://github.com/openweft/weft-loom-server) via weft-agent when a compile job picks this language.
